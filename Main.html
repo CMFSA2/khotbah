@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <!-- Chosen Palette: Warm Neutral Harmony (Warm Sand, Deep Navy, Rich Gold, Slate Gray) -->
+    <!-- Application Structure Plan:
+        1. Hero & Overview: Contextual banner with key verse 2 Tim 4:7-8, core metrics, and introductory narrative.
+        2. Navigation Bar: Sticky tab navigation allowing users to explore different dimensions non-linearly.
+        3. Section 1 - Eksegesis Yunani & Metafora: Interactive Greek word-study cards (Agōn, Dromos, Pistis, Stephanos) with dynamic detail drawer.
+        4. Section 2 - Matriks Komparasi Kemenangan: Chart.js Radar Chart & interactive comparison table comparing Secular vs Biblical Victory.
+        5. Section 3 - Alur Homiletis & Transkrip Khotbah 30 Menit: Interactive sermon step-navigation and segment-by-segment transcript reader with homiletical goals and Derek Redmond illustration spotlight.
+        6. Section 4 - Analisis Pastoral & Transformasi: Accordion-style deep dives into youth retention, deconstruction, and intergenerational mentoring.
+        7. Section 5 - Tool Refleksi Pemuda: Interactive self-assessment tool ("Evaluasi Lintasan Maraton Imanku") generating personalized feedback.
+    -->
+    <!-- Visualization & Content Choices:
+        - Greek Word Breakdown: Card grid + Vanilla JS dynamic reader -> Clear linguistic exploration -> Interactive drill-down -> Styled HTML/CSS.
+        - Secular vs Biblical Victory: Chart.js Radar Chart -> Comparative visualization -> Hover tooltips & metric switching -> Chart.js Canvas.
+        - Sermon Transcript Reader: Dynamic step buttons -> Logical sermon progression -> Segment switching & key quote highlights -> Custom JS state.
+        - Pastoral Analysis: Styled HTML accordion -> Structured qualitative insights -> Expandable cards -> Vanilla JS toggle.
+        - Youth Self-Assessment: Interactive form checklist -> Personal engagement & decision tool -> Real-time score calculation -> Vanilla JS logic.
+        - NO SVG or Mermaid JS used. HTML unicode icons & styled CSS elements used throughout.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triumph of a Lifetime - Eksegesis & Khotbah Pemuda 2 Timotius 4:7-8</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cream: '#FDFBF7',
+                        sand: '#F4EFE6',
+                        navy: {
+                            800: '#1E3A8A',
+                            900: '#0F172A'
+                        },
+                        gold: {
+                            500: '#D97706',
+                            600: '#B45309'
+                        },
+                        slate: {
+                            700: '#334155',
+                            800: '#1E293B'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #FDFBF7;
+            color: #1E293B;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        /* Chart container constraint rule */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 650px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 320px;
+            max-height: 380px;
+        }
+
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+
+        .tab-btn.active {
+            border-bottom: 3px solid #D97706;
+            color: #1E3A8A;
+            font-weight: 700;
+            background-color: rgba(217, 119, 6, 0.08);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #F4EFE6;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #CBD5E1;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- HERO HEADER -->
+    <header class="bg-navy-900 text-white border-b-4 border-gold-500 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                <div>
+                    <div class="flex items-center gap-2 text-gold-500 text-sm font-semibold tracking-wider uppercase mb-1">
+                        <span>📖 Laporan Eksegetis & Naskah Khotbah Pemuda</span>
+                    </div>
+                    <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
+                        Triumph of a Lifetime
+                    </h1>
+                    <p class="text-slate-300 text-base sm:text-lg mt-1 max-w-2xl">
+                        Meredefinisi Kemenangan Sejati Generasi Muda Kristen Berdasarkan 2 Timotius 4:7-8
+                    </p>
+                </div>
+                <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 text-center md:text-right shadow-inner w-full md:w-auto">
+                    <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold block">Teks Utama Alkitab</span>
+                    <span class="text-gold-500 text-lg font-bold">2 Timotius 4:7-8</span>
+                    <span class="text-xs text-slate-300 block mt-1">Kontekstualisasi Teologi Protestan-Injili</span>
+                </div>
+            </div>
+
+            <!-- Context Banner Quote -->
+            <div class="mt-6 p-4 bg-slate-800/80 rounded-lg border-l-4 border-gold-500 text-slate-200 text-sm italic">
+                "Aku telah mengakhiri pertandingan yang baik, aku telah mencapai garis akhir dan aku telah memelihara iman. Sekarang telah tersedia bagiku mahkota kebenaran..."
+            </div>
+        </div>
+    </header>
+
+    <!-- STICKY NAVIGATION TABS -->
+    <nav class="sticky top-0 z-50 bg-white/95 backdrop-blur shadow-sm border-b border-sand">
+        <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
+            <div class="flex overflow-x-auto space-x-1 sm:space-x-4 py-2 no-scrollbar" id="nav-tabs">
+                <button onclick="switchTab('exegesis')" id="tab-exegesis" class="tab-btn active px-4 py-2.5 rounded-t-lg text-xs sm:text-sm font-medium whitespace-nowrap transition-all">
+                    🔍 Eksegesis & Bahasa Yunani
+                </button>
+                <button onclick="switchTab('comparison')" id="tab-comparison" class="tab-btn px-4 py-2.5 rounded-t-lg text-xs sm:text-sm font-medium whitespace-nowrap transition-all">
+                    ⚖️ Matriks Komparasi Kemenangan
+                </button>
+                <button onclick="switchTab('sermon')" id="tab-sermon" class="tab-btn px-4 py-2.5 rounded-t-lg text-xs sm:text-sm font-medium whitespace-nowrap transition-all">
+                    📜 Mari Renungkan
+                </button>
+                <button onclick="switchTab('pastoral')" id="tab-pastoral" class="tab-btn px-4 py-2.5 rounded-t-lg text-xs sm:text-sm font-medium whitespace-nowrap transition-all">
+                    🌱 Analisis Pastoral Youth
+                </button>
+                <button onclick="switchTab('reflection')" id="tab-reflection" class="tab-btn px-4 py-2.5 rounded-t-lg text-xs sm:text-sm font-medium whitespace-nowrap transition-all">
+                    🎯 Tool Refleksi Pemuda
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+
+        <!-- ================= TAB 1: EKSEGESIS & BAHASA YUNANI ================= -->
+        <section id="sec-exegesis" class="space-y-6">
+            <!-- Section Introductory Paragraph -->
+            <div class="bg-white p-6 rounded-2xl border border-sand shadow-sm">
+                <h2 class="text-2xl font-bold text-navy-900 mb-2">Mari Membedah Kata per Kata!</h2>
+                <p class="text-slate-700 leading-relaxed">
+                    Bagian ini menguraikan analisis linguistik terhadap teks Yunani 2 Timotius 4:7-8. Rasul Paulus menggunakan metafora atletik dan militer yang sangat populer dalam kebudayaan Yunani-Romawi (seperti Pertandingan Isthmia dan Olimpiade Kuno) untuk mengomunikasikan realitas perjuangan rohani dan piala kekal. Klik setiap kartu kata Yunani di bawah untuk mengeksplorasi arti harfiah, implikasi teologis, dan apa maksudnya untuk kita.
+                </p>
+            </div>
+
+            <!-- Interactive Greek Term Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div onclick="selectGreekWord('agon')" id="card-agon" class="cursor-pointer bg-white p-5 rounded-xl border-2 border-gold-500 shadow-md hover:shadow-lg transition-all transform hover:-translate-y-1">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-xs font-bold text-gold-600 uppercase tracking-wider">Perjuangan / Pertandingan</span>
+                        <span class="text-xl">⚔️</span>
+                    </div>
+                    <h3 class="text-xl font-extrabold text-navy-900">Agōn</h3>
+                    <p class="text-xs text-slate-500 italic mt-0.5">ton kalon agōna ēgōnismai</p>
+                    <p class="text-sm text-slate-700 mt-2 font-medium">"Aku telah mengakhiri pertandingan yang baik"</p>
+                </div>
+
+                <div onclick="selectGreekWord('dromos')" id="card-dromos" class="cursor-pointer bg-white p-5 rounded-xl border-2 border-transparent hover:border-gold-500 shadow-sm hover:shadow-lg transition-all transform hover:-translate-y-1">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Lintasan / Maraton</span>
+                        <span class="text-xl">🏃</span>
+                    </div>
+                    <h3 class="text-xl font-extrabold text-navy-900">Dromos</h3>
+                    <p class="text-xs text-slate-500 italic mt-0.5">ton dromon teteleka</p>
+                    <p class="text-sm text-slate-700 mt-2 font-medium">"Aku telah mencapai garis akhir"</p>
+                </div>
+
+                <div onclick="selectGreekWord('pistis')" id="card-pistis" class="cursor-pointer bg-white p-5 rounded-xl border-2 border-transparent hover:border-gold-500 shadow-sm hover:shadow-lg transition-all transform hover:-translate-y-1">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Deposito Iman</span>
+                        <span class="text-xl">🛡️</span>
+                    </div>
+                    <h3 class="text-xl font-extrabold text-navy-900">Pistis / Tēreō</h3>
+                    <p class="text-xs text-slate-500 italic mt-0.5">tēn pistin tetērēka</p>
+                    <p class="text-sm text-slate-700 mt-2 font-medium">"Aku telah memelihara iman"</p>
+                </div>
+
+                <div onclick="selectGreekWord('stephanos')" id="card-stephanos" class="cursor-pointer bg-white p-5 rounded-xl border-2 border-transparent hover:border-gold-500 shadow-sm hover:shadow-lg transition-all transform hover:-translate-y-1">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Mahkota Kebenaran</span>
+                        <span class="text-xl">👑</span>
+                    </div>
+                    <h3 class="text-xl font-extrabold text-navy-900">Stephanos</h3>
+                    <p class="text-xs text-slate-500 italic mt-0.5">ho tēs dikaiosynēs stephanos</p>
+                    <p class="text-sm text-slate-700 mt-2 font-medium">"Mahkota kebenaran yang dikaruniakan"</p>
+                </div>
+            </div>
+
+            <!-- Dynamic Detail Drawer -->
+            <div id="greek-detail-drawer" class="bg-white p-6 rounded-2xl border border-sand shadow-md space-y-4">
+                <!-- Content populated via JavaScript -->
+            </div>
+        </section>
+
+        <!-- ================= TAB 2: MATRIKS KOMPARASI KEMENANGAN ================= -->
+        <section id="sec-comparison" class="space-y-6 hidden">
+            <!-- Section Introductory Paragraph -->
+            <div class="bg-white p-6 rounded-2xl border border-sand shadow-sm">
+                <h2 class="text-2xl font-bold text-navy-900 mb-2">Kemenangan Dunia vs. Kemenangan Surga</h2>
+                <p class="text-slate-700 leading-relaxed">
+                    Dunia modern dan media sosial mendefinisikan kemenangan melalui akumulasi materi, popularitas, dan kecepatan pencapaian karir. Sebaliknya, Injil Kristus mendefinisikan kemenangan berdasarkan kesetiaan, pemeliharaan iman, dan daya tahan yang ditopang oleh anugerah (sola gratia). Gunakan visualisasi grafik radar dan tabel interaktif di bawah untuk memperbandingkan dua pandangan yang saling berlawanan ini. Dan tentukan, dimana posisimu.
+                </p>
+            </div>
+
+            <!-- Visualization & Interactive Matrix Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                
+                <!-- Chart Container -->
+                <div class="lg:col-span-5 bg-white p-5 rounded-2xl border border-sand shadow-sm">
+                    <h3 class="text-base font-bold text-navy-900 mb-1 text-center">Profil Nilai: Sekuler vs Alkitabiah</h3>
+                    <p class="text-xs text-slate-500 text-center mb-4">Perbandingan fokus prioritas dalam indikator kemenangan</p>
+                    <div class="chart-container">
+                        <canvas id="comparisonRadarChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Interactive Comparison Table -->
+                <div class="lg:col-span-7 bg-white p-5 rounded-2xl border border-sand shadow-sm overflow-x-auto">
+                    <h3 class="text-base font-bold text-navy-900 mb-3">Tabel Perbandingan Parameter</h3>
+                    <table class="w-full text-sm text-left text-slate-700 border-collapse">
+                        <thead class="text-xs uppercase bg-slate-100 text-slate-700">
+                            <tr>
+                                <th class="p-3 border-b">Parameter</th>
+                                <th class="p-3 border-b text-red-700">Kemenangan Sekuler</th>
+                                <th class="p-3 border-b text-navy-800">Kemenangan Alkitabiah (2 Tim 4:7-8)</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            <tr class="hover:bg-sand/30 transition-colors">
+                                <td class="p-3 font-semibold text-slate-900">Definisi Utama</td>
+                                <td class="p-3 text-slate-600">Akumulasi materi, popularitas, pencapaian karir instan, dan kenyamanan.</td>
+                                <td class="p-3 text-slate-900 font-medium">Kesetiaan menyelesaikan panggilan pelayanan dan memelihara kemurnian iman.</td>
+                            </tr>
+                            <tr class="hover:bg-sand/30 transition-colors">
+                                <td class="p-3 font-semibold text-slate-900">Sumber Kekuatan</td>
+                                <td class="p-3 text-slate-600">Ambisi pribadi, kepintaran, kecerdasan, kebijaksanaan, dan mengandalkan kekuatan diri sendiri.</td>
+                                <td class="p-3 text-slate-900 font-medium">Anugerah Allah (*sola gratia*), kepenuhan Roh Kudus, dan daya tahan Kristus.</td>
+                            </tr>
+                            <tr class="hover:bg-sand/30 transition-colors">
+                                <td class="p-3 font-semibold text-slate-900">Sifat Penghargaan</td>
+                                <td class="p-3 text-slate-600">Fana, sementara, pasti akan hilang, tergantung pujian manusia.</td>
+                                <td class="p-3 text-slate-900 font-medium">Tak terbinasakan, kekal (stephanos dikaiosynēs), dari Hakim yang Adil.</td>
+                            </tr>
+                            <tr class="hover:bg-sand/30 transition-colors">
+                                <td class="p-3 font-semibold text-slate-900">Kriteria Penilaian</td>
+                                <td class="p-3 text-slate-600">Hasil akhir terlihat oleh mata, bergantung pada kecepatan, dan berorientasi pada keunggulan atas orang lain.</td>
+                                <td class="p-3 text-slate-900 font-medium">Kesetiaan (*faithfulness*), daya tahan dalam penderitaan, integritas hidup.</td>
+                            </tr>
+                            <tr class="hover:bg-sand/30 transition-colors">
+                                <td class="p-3 font-semibold text-slate-900">Orientasi Waktu</td>
+                                <td class="p-3 text-slate-600">Berfokus pada kenikmatan masa kini (here and now).</td>
+                                <td class="p-3 text-slate-900 font-medium">Berfokus pada kekekalan dan kerinduan akan kedatangan Kristus.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 3: STRUKTUR & TRANSKRIP KHOTBAH ================= -->
+        <section id="sec-sermon" class="space-y-6 hidden">
+            <!-- Section Introductory Paragraph -->
+            <div class="bg-white p-6 rounded-2xl border border-sand shadow-sm">
+                <h2 class="text-2xl font-bold text-navy-900 mb-2">Triump of a Lifetime</h2>
+                <p class="text-slate-700 leading-relaxed">
+                    Triumph of a Lifetime atau Kemenangan Terbesar dalam Hidup adalah sesuatu yang harus kita renungkan dan pahami untuk menjalani hidup kita ditengah dunia yang serba cepat, dunia yang penuh dengan penghakiman dan penilaian. Klik pada tiap poin perenungan di bawah ini untuk membawa kita kepada perenungan yang mendalam tentang kehendak Tuhan, dan kerinduan Tuhan atas hidupmu.
+                </p>
+            </div>
+
+            <!-- Segment Navigation Bar -->
+            <div class="bg-white p-6 rounded-2xl border border-sand shadow-sm space-y-4">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-sand pb-3">
+                    <div>
+                        <h3 class="text-base font-bold text-navy-900">Pilih Poin Perenungan</h3>
+                        <p class="text-xs text-slate-500">Klik tiap poin di bawah untuk merenungkan tiap pesan Tuhan kepada kita</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-3" id="sermon-nav-buttons">
+                    <!-- Buttons populated dynamically -->
+                </div>
+
+                <div id="sermon-segment-summary" class="bg-sand/40 p-4 rounded-xl border border-sand text-xs sm:text-sm text-slate-700">
+                    <!-- Segment summary info -->
+                </div>
+            </div>
+
+            <!-- Sermon Transcript Reader Container -->
+            <div class="bg-white p-6 sm:p-8 rounded-2xl border border-sand shadow-md space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-100 pb-4 gap-2">
+                    <div>
+                        <span id="transcript-badge" class="px-3 py-1 bg-navy-800 text-white text-xs font-bold rounded-full uppercase tracking-wider">
+                            Kemenangan Paulus
+                        </span>
+                        <h3 id="transcript-title" class="text-2xl font-extrabold text-navy-900 mt-2">
+                            Introduksi – Kemenangan Semu vs. Kemenangan Sejati
+                        </h3>
+                    </div>
+                    <div class="text-xs text-slate-500 font-semibold bg-sand px-3 py-1.5 rounded-lg">
+                        📖 by: <span id="transcript-duration">5 Menit</span>
+                    </div>
+                </div>
+
+                <!-- Full Transcript Text Box -->
+                <div id="transcript-body" class="prose max-w-none text-slate-800 leading-relaxed space-y-4 text-base custom-scrollbar max-h-[550px] overflow-y-auto pr-2">
+                    <!-- Text dynamically injected -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 4: ANALISIS PASTORAL YOUTH ================= -->
+        <section id="sec-pastoral" class="space-y-6 hidden">
+            <!-- Section Introductory Paragraph -->
+            <div class="bg-white p-6 rounded-2xl border border-sand shadow-sm">
+                <h2 class="text-2xl font-bold text-navy-900 mb-2">Analisis Pastoral & Dampak Transformasi</h2>
+                <p class="text-slate-700 leading-relaxed">
+                    Formulasi khotbah ini menghasilkan implikasi pastoral mendalam bagi pembinaan pemuda di lingkungan gereja Protestan-Injili. Tinjau tiga pilar transformasi kunci berikut yang menjawab krisis retensi, dekonstruksi iman, dan kebutuhan mentoring antargenerasi.
+                </p>
+            </div>
+
+            <!-- Pastoral Cards Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Card 1 -->
+                <div class="bg-white p-6 rounded-2xl border border-sand shadow-sm hover:shadow-md transition-all space-y-3">
+                    <div class="w-10 h-10 rounded-xl bg-gold-500/10 text-gold-600 flex items-center justify-center font-bold text-xl">
+                        💡
+                    </div>
+                    <h3 class="text-lg font-bold text-navy-900">Pergeseran dari Emotivisme ke Pengudusan</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed">
+                        Banyak pemuda terpapar emotivisme—iman yang bertumpu pada perasaan sewaktu ibadah tanpa akar doktrinal. Melalui metafora *agōn* dan *dromos*, pemuda didorong memahami bahwa pertumbuhan rohani sejati diukur dari pembentukan karakter melalui disiplin harian yang konsisten, bukan emosi sesaat.
+                    </p>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="bg-white p-6 rounded-2xl border border-sand shadow-sm hover:shadow-md transition-all space-y-3">
+                    <div class="w-10 h-10 rounded-xl bg-navy-800/10 text-navy-800 flex items-center justify-center font-bold text-xl">
+                        🛡️
+                    </div>
+                    <h3 class="text-lg font-bold text-navy-900">Penanganan Krisis Retensi & Dekonstruksi</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed">
+                        Fenomena dekonstruksi iman sering dipicu kekecewaan terhadap teologi populer yang menjanjikan hidup bebas penderitaan. Pengajaran Paulus dari penjara memberikan teologi penderitaan Alkitabiah: penderitaan bukanlah tanda penolakan Allah, melainkan arena kemurnian iman.
+                    </p>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="bg-white p-6 rounded-2xl border border-sand shadow-sm hover:shadow-md transition-all space-y-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold text-xl">
+                        🤝
+                    </div>
+                    <h3 class="text-lg font-bold text-navy-900">Mentoring Antargenerasi (*Intergenerational*)</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed">
+                        Tanggung jawab *tēn pistin tetērēka* menuntut transfer deposito Injil utuh. Gereja diajak tidak mengisolasi pemuda dalam ghetto terpisah, melainkan membangun ekosistem pendampingan antargenerasi seperti hubungan Paulus dan Timotius.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Deep Dive Accordion -->
+            <div class="bg-white p-6 rounded-2xl border border-sand shadow-sm space-y-4">
+                <h3 class="text-xl font-bold text-navy-900">Implikasi Pelayanan Pemuda Praktis</h3>
+                <div class="space-y-3">
+                    <details class="group border border-slate-200 rounded-xl p-4 [&_summary::-webkit-details-marker]:hidden">
+                        <summary class="flex items-center justify-between cursor-pointer text-slate-900 font-semibold">
+                            <span>1. Redefinisi Program Pemuda: Dari Hiburan ke Pemutiduran Doktrinal</span>
+                            <span class="transition group-open:rotate-180">▼</span>
+                        </summary>
+                        <p class="mt-3 text-slate-600 text-sm leading-relaxed">
+                            Pelayanan youth perlu mengimbangi elemen kreatif dengan pengajaran doktrin yang solid. Mengajar pemuda cara menggali Kitab Suci (*sola scriptura*) memberi mereka senjata rohani melawan ideologi sekuler yang merusak.
+                        </p>
+                    </details>
+
+                    <details class="group border border-slate-200 rounded-xl p-4 [&_summary::-webkit-details-marker]:hidden">
+                        <summary class="flex items-center justify-between cursor-pointer text-slate-900 font-semibold">
+                            <span>2. Merangkul Ketahanan dalam Pergumulan (*Endurance in Agony*)</span>
+                            <span class="transition group-open:rotate-180">▼</span>
+                        </summary>
+                        <p class="mt-3 text-slate-600 text-sm leading-relaxed">
+                            Gereja harus menyediakan ruang aman bagi pemuda untuk jujur mengekspresikan keraguan dan pergumulan mental mereka, sembari terus mengarahkan mereka pada anugerah Allah yang menopang di tengah lintasan maraton iman.
+                        </p>
+                    </details>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 5: TOOL REFLEKSI PEMUDA ================= -->
+        <section id="sec-reflection" class="space-y-6 hidden">
+            <!-- Section Introductory Paragraph -->
+            <div class="bg-white p-6 rounded-2xl border border-sand shadow-sm">
+                <h2 class="text-2xl font-bold text-navy-900 mb-2">Evaluasi Lintasan Maraton Imanku</h2>
+                <p class="text-slate-700 leading-relaxed">
+                    Kemenangan seumur hidup ditentukan oleh keputusan ketaatan yang diambil hari ini. Gunakan tool evaluasi mandiri interaktif di bawah untuk menilai sejauh mana Anda sedang bertanding dalam pertandingan yang baik, berlari dengan tekun, dan memelihara iman.
+                </p>
+            </div>
+
+            <!-- Interactive Quiz / Evaluation Tool -->
+            <div class="bg-white p-6 sm:p-8 rounded-2xl border border-sand shadow-md space-y-6">
+                <form id="quiz-form" onsubmit="calculateReflection(event)" class="space-y-6">
+                    
+                    <!-- Question 1 -->
+                    <div class="space-y-2 border-b border-slate-100 pb-4">
+                        <label class="block text-sm font-bold text-navy-900">
+                            1. Arena Perjuangan: Dalam hal apa Anda paling sering menguras energi kehidupan saat ini?
+                        </label>
+                        <div class="space-y-2 text-sm text-slate-700">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="q1" value="secular" required class="text-gold-500 focus:ring-gold-500">
+                                Mengejar pengakuan, pencapaian karir, dan gaya hidup di media sosial.
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="q1" value="biblical" class="text-gold-500 focus:ring-gold-500">
+                                Mematikan keinginan daging, menjaga integritas, dan melayani Kristus.
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Question 2 -->
+                    <div class="space-y-2 border-b border-slate-100 pb-4">
+                        <label class="block text-sm font-bold text-navy-900">
+                            2. Daya Tahan Lari (*Dromos*): Bagaimana respon Anda saat mengalami kegagalan rohani atau penderitaan?
+                        </label>
+                        <div class="space-y-2 text-sm text-slate-700">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="q2" value="secular" required class="text-gold-500 focus:ring-gold-500">
+                                Memilih berhenti berlari, menyalahkan keadaan, dan menjauh dari gereja.
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="q2" value="biblical" class="text-gold-500 focus:ring-gold-500">
+                                Segera bertobat, bersandar pada anugerah Allah (*sola gratia*), dan bangkit kembali.
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Question 3 -->
+                    <div class="space-y-2 border-b border-slate-100 pb-4">
+                        <label class="block text-sm font-bold text-navy-900">
+                            3. Memelihara Deposito Iman (*Pistis*): Bagaimana Anda menyikapi kebenaran Firman Allah di tengah budaya sekuler?
+                        </label>
+                        <div class="space-y-2 text-sm text-slate-700">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="q3" value="secular" required class="text-gold-500 focus:ring-gold-500">
+                                Berkompromi dengan standar dunia agar diterima oleh lingkungan.
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="q3" value="biblical" class="text-gold-500 focus:ring-gold-500">
+                                Berdiri teguh di atas otoritas Alkitab (*sola scriptura*) meskipun dianggap kuno.
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Question 4 -->
+                    <div class="space-y-2 border-b border-slate-100 pb-4">
+                        <label class="block text-sm font-bold text-navy-900">
+                            4. Orientasi Penghargaan (*Stephanos*): Apa pendorong utama tindakan Anda setiap hari?
+                        </label>
+                        <div class="space-y-2 text-sm text-slate-700">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="q4" value="secular" required class="text-gold-500 focus:ring-gold-500">
+                                Pujian manusia, penerimaan kelompok, dan kenyamanan masa kini.
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="q4" value="biblical" class="text-gold-500 focus:ring-gold-500">
+                                Kerinduan akan penilaian dari Sang Hakim yang Adil dan mahkota kekal.
+                            </label>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full sm:w-auto px-6 py-3 bg-gold-500 hover:bg-gold-600 text-white font-bold rounded-xl shadow-md transition-all">
+                        📊 Hitung Hasil Refleksi
+                    </button>
+                </form>
+
+                <!-- Result Box -->
+                <div id="reflection-result" class="hidden p-6 rounded-xl border space-y-3">
+                    <!-- Populated via JavaScript -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-navy-900 text-slate-400 py-6 border-t border-slate-800 text-center text-xs sm:text-sm mt-auto">
+        <div class="max-w-7xl mx-auto px-4 space-y-2">
+            <p class="font-medium text-slate-300">Triumph of a Lifetime - Interactive Bible Study & Homiletics Dashboard</p>
+            <p>Berdasarkan Eksegesis 2 Timotius 4:7-8 & Teologi Protestan-Injili</p>
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // DATA STORE
+        const GREEK_WORDS = {
+            agon: {
+                title: "Agōn (ἀγών)",
+                versePhrase: "ton kalon agōna ēgōnismai",
+                translation: "Aku telah mengakhiri pertandingan yang baik",
+                rootMeaning: "Kontes atletik yang sengit, pertarungan gulat, atau pertempuran militer. Dari kata ini diserap istilah 'agony' (perjuangan yang menyedot daya tahan).",
+                theologicalInsight: "Kata sifat 'kalos' menekankan bahwa ini bukan sekadar perjuangan biasa, melainkan perjuangan mulia dan indah secara moral di hadapan Allah. Pertarungan rohani melawan tiga musuh: daging (flesh), dunia (world), dan Iblis (devil).",
+                youthApplication: "Banyak dari kita lelah (burnout) karena bertanding di arena yang salah (mengejar gengsi & validasi). Melalui kebenaran ini, kita diajak memfokuskan energi untuk bertanding dalam pertandingan agōn—mematikan dosa dan hidup bagi Kristus."
+            },
+            dromos: {
+                title: "Dromos (δρόμος)",
+                versePhrase: "ton dromon teteleka",
+                translation: "Aku telah mencapai garis akhir",
+                rootMeaning: "Lintasan lari maraton yang telah ditetapkan secara spesifik bagi pelari. Kata kerja 'teleō' bentuk perfek aktif (teteleka) menunjukkan tindakan yang selesai sempurna dengan dampak permanen.",
+                theologicalInsight: "Kehidupan Kristen adalah maraton ketahanan, bukan lari cepat 100 meter. Allah menetapkan rute spesifik bagi setiap orang percaya, dan daya tahan ditopang oleh anugerah Allah (sola gratia).",
+                youthApplication: "Awal yang spektakuler tidak berarti tanpa penyelesaian yang setia. Ilustrasi Derek Redmond mengingatkan bahwa saat kamu terpincang-pincang, Bapa di dalam Kristus merangkul dan menopang hingga garis akhir."
+            },
+            pistis: {
+                title: "Pistis / Tēreō (πίστις / τηρέω)",
+                versePhrase: "tēn pistin tetērēka",
+                translation: "Aku melepaskan & memelihara iman",
+                rootMeaning: "'Tēreō' berarti menjaga atau melindungi harta yang amat berharga dari pencurian atau kerusakan.",
+                theologicalInsight: "Mencakup fides quae creditur (kebenaran pengajaran yang sesuai Alkitab) dan fides qua creditur (kesetiaan pribadi dan kepercayaan konstan kepada Kristus).",
+                youthApplication: "Memelihara iman di abad ini berarti mempertahankan kemurnian pengajaran yang telah kita terima dari ajaran sesat & relativisme, serta berdiri teguh atas otoritas mutlak Alkitab (sola scriptura)."
+            },
+            stephanos: {
+                title: "Stephanos (στέφανος)",
+                versePhrase: "ho tēs dikaiosynēs stephanos",
+                translation: "Mahkota kebenaran yang dikaruniakan",
+                rootMeaning: "Mahkota kemenangan. Berbeda dari mahkota daun salam kuno yang cepat layu, stephanos ini bersifat kekal dan memancarkan kebenaran Kristus.",
+                theologicalInsight: "Dikaruniakan oleh 'ho dikaios kritēs' (Tuhan, Hakim yang Adil) yang menilai berdasarkan kesetiaan hati, bukan standar populer manusia. Diberikan bagi semua orang yang merindukan kedatangan-Nya.",
+                youthApplication: "Dunia memberikan penilaian yang curang, namun Kristus mencatat setiap pengorbanan tersembunyi. Kerinduan akan hari Tuhan mendorong kita untuk hidup dalam kehendak-Nya hari ini."
+            }
+        };
+
+        const SERMON_SEGMENTS = [
+            {
+                id: 0,
+                time: "Kemenangan Paulus",
+                duration: "Christian M.F Simarmata",
+                title: "Kemenangan Palsu vs. Kemenangan Sejati",
+                goal: "Merekonstruksi ulang definisi sukses; benang merah antara kehidupan kita dan Paulus yang dipenjara.",
+                text: `<p>Jika hari ini kita mengetik kata "pemenang" atau "sukses" di dalam mesin pencari media sosial, algoritma digital akan langsung menyajikan ribuan visualisasi yang seragam. Kita akan melihat potret anak muda which is bisa jadi mereka adalah teman kita di usia 20-an yang memamerkan saldo rekening fantastis, kendaraan mewah, posisi kepemimpinan yang mapan, atau jumlah pengikut yang melimpah di platform maya, ataukah mungkin itu adalah kita? Kebudayaan modern telah mereduksi makna kemenangan menjadi sekadar kalkulasi angka, penampilan kemewahan luar, dan pengakuan publik yang instan. Banyak diantara kita dibentuk untuk percaya bahwa kemenangan adalah tentang siapa yang paling cepat sampai di puncak pencapaian materi (uang, pekerjaan, studi, dsb.), tanpa peduli bagaimana cara mencapainya atau apa yang terjadi dengan jiwamu dalam proses tersebut.</p>
+                       <p>Namun, di tengah bisingnya standar dunia yang fana itu, mari kita mengheningkan cipta sejenak dan melangkah masuk ke dalam sebuah sel penjara Roma abad pertama yang gelap, lembap, dan dingin. Di sana duduk seorang pria tua bernama Paulus. Fisiknya telah melemah, badannya dipenuhi bekas luka penganiayaan, tangannya terikat rantai besi, dan dalam hitungan hari di ekseksusi mati oleh pedang algojo Kaisar Nero. Tentu, berdasarkan analisis kasat mata dan ukuran kesuksesan duniawi, Paulus adalah seorang yang gagal total. Ia tidak meninggalkan warisan properti, tidak memiliki pengaruh politik, dan ditinggalkan oleh banyak kawan pelayanannya.</p>
+                       <p>Namun, dari kedalaman sel penjara tersebut, mengalirlah salah satu kalimat paling monumental dalam sejarah peradaban manusia, sebagaimana tertulis dalam <p><strong>2 Timotius 4:7-8</strong>:</p></p>
+                       <blockquote class="border-l-4 border-gold-500 pl-4 italic text-navy-900 bg-sand/30 py-2 my-2 rounded-r-lg">
+                           "Aku telah mengakhiri pertandingan yang baik, aku telah mencapai garis akhir dan aku telah memelihara iman. Sekarang telah tersedia bagiku mahkota kebenaran yang akan dikaruniakan kepadaku oleh Tuhan, Hakim yang adil, pada hari-Nya; tetapi bukan hanya kepadaku, melainkan juga kepada semua orang yang merindukan kedatangan-Nya."
+                       </blockquote>
+                       <p>Teman-teman, pernyataan ini bukanlah jeritan keputusasaan dari seorang terpidana mati, melainkan sebuah proklamasi kemenangan teragung yang pernah diucapkan oleh seorang hamba Allah. Paulus tidak sedang meratapi nasibnya; ia sedang merayakan <em>Triumph of a Lifetime</em>—sebuah Kemenangan Seumur Hidup yang diakui oleh surga. Pertanyaan yang menjadi permasalahan bagi kita semua adalah, lalu bagaimanakah kita sebagai generasi muda Kristen di abad ke-21 dapat meraih kemenangan sejati yang tahan uji di hadapan takhta Allah, dan bukan sekadar mengejar tepuk tangan fana dari dunia? Mari kita bedah tiga pilar utama dari teks ini.</p>`
+            },
+            {
+                id: 1,
+                time: "Pertandingan yang Baik",
+                duration: "Christian M.F Simarmata",
+                title: "Bertanding dalam Pertandingan yang Baik",
+                goal: "Menguraikan medan pertempuran rohani pemuda melawan dosa daging, sistem dunia, dan ajaran sesat.",
+                text: `<p>Pilar pertama dari kemenangan seumur hidup mengakar pada proklamasi Paulus di ayat ke-7a: <em>"Aku telah mengakhiri pertandingan yang baik"</em>.</p>
+                       <p>Dalam teks bahasa Yunani, kata yang dipilih Paulus untuk "pertandingan" adalah <strong>agōn</strong>. Dari akar kata inilah bahasa modern menyerap istilah <em>agony</em>, yang menggambarkan sebuah perjuangan yang sangat berat, intens, dan menyedot seluruh daya tahan fisik maupun mental. Paulus menggunakan latar belakang arena olahraga kuno—seperti gulat dan tinju—sebagai analogi dari kehidupan Kristen. Namun, perhatikan bahwa Paulus memberikan kata sifat yang sangat spesifik: ia sebut perjuangan itu sebagai <strong>ton kalon agōna</strong>—pertandingan yang baik, mulia, dan bernilai kekal.</p>
+                       <p>Dan kenyataannya, banyak diantara kita hari ini mengalami kelelahan jiwa (<em>burnout</em>) dan kehilangan arah karena baik kita sadari ataupun tidak, kita menghabiskan seluruh energi masa muda untuk bertanding dalam arena yang salah. Banyak diantara kita bertarung habis-habisan demi memperebutkan validasi orang lain, mengejar standar gaya hidup hedon, atau bersaing dengan sesama saudara demi memuaskan ego pribadi. Itu bukanlah kalos agōn. Itu adalah arena pertandingan fana yang menguras jiwa tanpa memberikan nilai keselamatan sedikit pun. Tentu, kita semua telah diselamatkan, maka dengan mengikuti pertandingan yang baik menunjukkan bahwa kita telah memaknai nilai keselamatan yang diberikan oleh Kristus sesuai dengan cara kita masing-masing yang berkenan dihadapan Allah.</p>
+                       <p>Maka dari itu teman-teman, pertandingan yang baik adalah pertarungan rohani yang nyata melawan tiga musuh utama keselamatan kita. Musuh pertama adalah <strong>kecenderungan daging (the flesh)</strong>, yaitu hawa nafsu tersembunyi, ketidakmurnian moral, kebiasaan buruk yang mengikat, dan keengganan untuk tunduk pada otoritas Kristus. Musuh kedua adalah <strong>sistem dunia (the world)</strong>, yaitu ideologi duniawi yang mendorong kita untuk hidup seolah-olah Allah tidak ada, mengajarkan kompromi terhadap kebenaran, dan memprioritaskan kenikmatan sesaat. Musuh ketiga adalah <strong>Iblis (the devil)</strong>, yaitu kuasa kegelapan yang terus berusaha menyusupkan kebohongan doktrinal (mulai maraknya hadir para pengkhotbah yang memberikan pengajaran yang salah dan menyesatkan, bahkan cenderung memuaskan ego jemaat) dan merusak kepercayaan kita kepada Injil.</p>
+                       <p>Bertanding dalam <em>kalos agōn</em> menuntut adanya disiplin rohani yang tajam. Seorang atlet tidak pernah naik ke atas arena tanpa persiapan fisik yang berat. Kemenangan rohani tidak pernah terjadi secara kebetulan (<em>accidental victory</em>). Kemenangan itu merupakan hasil dari keputusan sengit setiap hari untuk memberi diri dilatih oleh Firman Allah, mematikan keinginan daging, dan berani berkata "tidak" pada dosa ketika lingkungan pergaulan berteriak "ya". Pertandingan ini memang mendatangkan rasa sakit dan pengorbanan, tetapi ini adalah satu-satunya pertandingan yang memiliki bobot kemuliaan kekal.</p>`
+            },
+            {
+                id: 2,
+                time: "Kesetiaan Kunci Bertahan",
+                duration: "Christian M.F Simarmata",
+                title: "Setia Mencapai Garis Akhir – Ketahanan di Tengah Kelelahan",
+                goal: "Menjelaskan pentingnya ketahanan (endurance) maraton rohani melalui narasi anugerah Allah yang menopang.",
+                text: `<p>Pilar kedua dari kemenangan seumur hidup dinyatakan pada ayat ke-7b: <em>"Aku telah mencapai garis akhir"</em>.</p>
+                       <p>Paulus mengalihkan gambaran dari pertarungan jarak dekat ke olahraga lari maraton (<strong>ton dromon</strong>). Dalam sebuah lomba lari maraton, hal yang paling menentukan bukanlah seberapa cepat seorang pelari melesat di 100 meter pertama, melainkan apakah ia memiliki ketahanan (<em>endurance</em>) untuk terus melangkah hingga melintasi garis akhir di kilometer ke-42.</p>
+                       <p>Kebudayaan kita hari ini sangat mengagungkan awal yang spektakuler, namun sering kali meremehkan penyelesaian yang setia. Banyak diantara saudara seiman kita mengawali perjalanan iman mereka dengan emosi yang membara di acara retreat atau KKR, dsb. Namun, ketika waktu berjalan, ketika rutinitas dunia kerja dan perkuliahan menekan, ketika doa-doa tidak langsung dijawab sesuai keinginan, atau ketika penderitaan melanda, banyak yang mulai gugur di tengah jalan2. Mereka berhenti berlari, menyimpang dari lintasan ketaatan, dan mengalami kompromi iman, dan ingat, ini bisa terjadi dalam diri saya, teman-teman kita, dan kamu.</p>
+                       <div class="bg-amber-50 border-l-4 border-gold-500 p-4 rounded-r-xl my-3 text-slate-800">
+                           <strong class="text-gold-600 block mb-1">🏃 Kisah Derek Redmond & Barcelona 1992</strong>
+                           Pada Olimpiade Barcelona tahun 1992, pelari Britania Raya, Derek Redmond, tersungkur di lintasan 400 meter karena otot hamstring-nya robek. Meskipun dalam kesakitan parah, ia menolak tandu medis dan bangkit melompat dengan satu kaki demi mencapai garis akhir. Tiba-tiba ayahnya, Jim Redmond, menerobos barikade, merangkul tubuh anaknya yang terkulai, dan berkata: <em>"Kita akan menyelesaikannya bersama-sama."</em> Bersama ayahnya yang menopang setiap langkah, Derek melintasi garis akhir di bawah gemuruh berdiri dari 65.000 penonton.
+                       </div>
+                       <p>Kisah ini menyajikan ilustrasi sisi kemanusiaan kita yang sangat menyentuh mengenai ketahanan. Namun, dalam kerangka teologi Injili, ada 1 hal yang harus kita waspadai dan cermati, kita harus menarik batas yang jelas: kehidupan Kristen bukanlah tentang kekuatan tekad manusiawi kita sendiri untuk memaksakan diri mencapai garis akhir. Kita tidak diselamatkan dan tidak disempurnakan oleh kekuatan daging. Gambaran sang ayah yang turun ke lintasan adalah analogi indah dari anugerah Allah (<strong>Sola Gratia</strong>).</p>
+                       <p>Ketika kaki rohanimu terasa patah, ketika kamu mengalami kekecewaan yang dalam, atau ketika kamu merasa tidak sanggup lagi melangkah dalam kemurnian, ingatlah bahwa Allah Bapa di dalam Kristus tidak berdiri jauh di panggung penonton sekadar menghakimi kelemahanmu. Melalui Roh Kudus, Ia turun ke dalam lintasan hidupmu. Ia merangkul bahumu yang terkulai, memberikan daya tahan supranatural saat kamu kehabisan tenaga, dan menopangmu hingga kamu melintasi garis akhir. Kemenangan seumur hidup bukanlah tentang berlari tanpa pernah jatuh, melainkan tentang senantiasa bangkit dan bersandar pada anugerah Kristus yang menopang sampai akhir.</p>`
+            },
+            {
+                id: 3,
+                time: "Memelihara Iman",
+                duration: "Christian M.F Simarmata",
+                title: "Memelihara Iman dan Menanti Mahkota Kebenaran",
+                goal: "Membedah kewajiban memelihara deposito doktrin Injil dan fokus pada penghargaan dari Hakim yang Adil.",
+                text: `<p>Pilar ketiga dari kemenangan seumur hidup terkandung dalam ayat ke-7c dan ayat ke-8: <em>"Aku telah memelihara iman. Sekarang telah tersedia bagiku mahkota kebenaran..."</em></p>
+                       <p>Paulus menegaskan bahwa di sepanjang pertarungan dan maraton hidupnya, ia telah menjalankan sebuah tanggung jawab utama: <strong>tēn pistin tetērēka</strong>—memelihara iman. Di tengah gempuran pemikiran filosofis Roma dan tekanan untuk mereduksi berita salib agar lebih disukai masyarakat sekitar, Paulus tidak pernah merusak atau mempromosikan kompromi terhadap pengajaran Injil. Bagi generasi muda Kristen saat ini, memelihara iman berarti memelihara ortodoksi doktrinal Alkitabiah dan memelihara ortopraksis hidup kudus di tengah dunia yang makin relatif. Memelihara iman berarti ketika budaya populer berteriak bahwa Alkitab sudah kuno, kita tetap berdiri teguh atas otoritas mutlak Firman Allah (<strong>sola scriptura</strong>).</p>
+                       <p>Dan apakah ganjaran bagi mereka yang memelihara iman hingga garis akhir? Ayat 8 menyatakan bahwa telah tersedia <strong>ho tēs dikaiosynēs stephanos</strong>—Mahkota Kebenaran.</p>
+                       <p>Perhatikan dengan saksama siapa yang akan mengaruniakan mahkota tersebut: <em>"Tuhan, Hakim yang adil"</em> (<strong>ho dikaios kritēs</strong>). Di arena pertandingan dunia, manusia sering kali memberikan penilaian yang curang atau subjektif. Kamu mungkin telah berjuang keras menjaga integritas di tempat studi atau tempat kerja, tetapi orang lain yang mengambil kompromi justru dipuji. Kamu mungkin menolak godaan seksual dan menjaga kesucian diri, tetapi justru diejek sebagai orang yang ketinggalan zaman oleh lingkunganmu. Dunia menilai berdasarkan penampilan luar dan standar fana yang selalu berubah.</p>
+                       <p>Namun Alkitab memberikan jaminan bahwa pada hari eskatologis-Nya, Kristus sendiri akan duduk sebagai Hakim yang Adil. Ia mencatat setiap air mata yang kamu teteskan dalam mempertahankan kebenaran. Ia melihat setiap pengorbanan tersembunyi yang kamu lakukan demi nama-Nya. Dan pada "Hari Itu"—hari penyataan kemuliaan Kristus—Ia tidak akan mengaruniakan piala fana yang membusuk, melainkan Mahkota Kebenaran yang memancarkan kemuliaan kekal.</p>
+                       <p>Penghargaan kekal ini tidak dirancang secara eksklusif untuk rasul atau martir besar belaka, melainkan dikaruniakan <em>"kepada semua orang yang merindukan kedatangan-Nya"</em>. Kerinduan akan kedatangan Kristus (<strong>epiphaneia</strong>) bukanlah sikap pasif yang melarikan diri dari realitas dunia. Orang muda yang sungguh-sungguh merindukan kedatangan Kristus justru akan hidup dengan tingkat kehati-hatian yang tinggi, mengarahkan tujuan hidupnya pada nilai-nilai kekal, dan tidak membiarkan jiwanya terikat pada kenikmatan dosa sesaat.</p>`
+            },
+            {
+                id: 4,
+                time: "26:00 - 30:00",
+                duration: "4 Menit",
+                title: "Bagian V: Konklusi dan Aplikasi Praktis Pemuda – Memulai Hari Ini",
+                goal: "Mengajak pemuda menerapkan disiplin rohani harian, menanggalkan beban, dan menatap Kristus.",
+                text: `<p>Rekan-rekan pemuda yang dikasihi Tuhan,</p>
+                       <p>Suatu hari nanti, peziarahan kita di atas bumi ini akan sampai pada titik akhirnya. Denyut jantung kita akan berhenti, dan kisah perjalanan hidup kita akan ditutup secara permanen. Pada saat momen eskatologis itu tiba di hadapan takhta Allah, pengakuan apa yang paling engkau rindukan? Apakah engkau merindukan tepuk tangan fana dari dunia yang akan segera melupakan namamu, atau engkau merindukan suara Kristus berkata: <em>"Sangat baik keadaannya, hai hamba-Ku yang baik dan setia"</em>?</p>
+                       <p><em>Triumph of a Lifetime</em>—Kemenangan Seumur Hidup—tidak ditentukan di hari terakhir hidupmu belaka; kemenangan itu ditentukan oleh keputusan-keputusan ketaatan yang engkau ambil hari ini. Engkau tidak akan bisa menyelesaikan garis akhir dengan setia kelak jika engkau tidak berani melangkah dalam ketaatan hari ini.</p>
+                       <ul class="list-disc pl-5 space-y-1 my-2">
+                           <li><strong>Langkah konkret pertama:</strong> Melakukan penanggalan beban. Tanggalkanlah setiap kebiasaan dosa tersembunyi, ikatan adiksi, dan hubungan kompromistis.</li>
+                           <li><strong>Langkah kedua:</strong> Membangun disiplin rohani harian yang konsisten. Berakarlah dalam Alkitab (<em>sola scriptura</em>), tekun dalam doa pribadi, dan tertanam aktif dalam gereja lokal.</li>
+                           <li><strong>Langkah ketiga:</strong> Menetapkan fokus mata hanya kepada Yesus. Sebagaimana Ibrani 12:2 menasihatkan: <em>"Marilah kita melakukannya dengan mata yang tertuju kepada Yesus..."</em></li>
+                       </ul>
+                       <p>Jika hari ini engkau merasa lelah, jika engkau merasa terpincang-pincang di tengah lintasan karena beratnya beban hidup atau rasa bersalah atas kegagalan masa lalu, bertobatlah dan datanglah kepada Kristus. Bapa Surgawimu siap merangkul bahumu hari ini melalui anugerah-Nya, memberikan kesegaran baru, dan memampukanmu berlari kembali hingga melintasi garis akhir.</p>
+                       <p>Mari kita bertanding dalam pertandingan yang baik. Mari kita selesaikan maraton iman ini. Mari kita pelihara deposito kebenaran Injil. Sebab mahkota kebenaran dari Sang Hakim yang Adil telah menanti kita di garis akhir kekekalan.</p>
+                       <p>Tuhan Yesus memberkati seluruh generasi muda Kristen. Amin.</p>`
+            }
+        ];
+
+        let radarChartInstance = null;
+
+        // INITIALIZATION
+        document.addEventListener('DOMContentLoaded', () => {
+            selectGreekWord('agon');
+            renderSermonSegmentButtons();
+            loadSermonSegment(0);
+            initRadarChart();
+        });
+
+        // TAB NAVIGATION LOGIC
+        function switchTab(tabId) {
+            const tabs = ['exegesis', 'comparison', 'sermon', 'pastoral', 'reflection'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                const sec = document.getElementById(`sec-${t}`);
+                if (t === tabId) {
+                    btn.classList.add('active');
+                    sec.classList.remove('hidden');
+                } else {
+                    btn.classList.remove('active');
+                    sec.classList.add('hidden');
+                }
+            });
+
+            // Re-render chart animations if tab active
+            if (tabId === 'comparison' && radarChartInstance) {
+                radarChartInstance.resize();
+            }
+        }
+
+        // GREEK WORD CARD SELECTION
+        function selectGreekWord(key) {
+            const word = GREEK_WORDS[key];
+            const drawer = document.getElementById('greek-detail-drawer');
+            
+            // Highlight cards
+            ['agon', 'dromos', 'pistis', 'stephanos'].forEach(k => {
+                const card = document.getElementById(`card-${k}`);
+                if (k === key) {
+                    card.classList.add('border-gold-500');
+                    card.classList.remove('border-transparent');
+                } else {
+                    card.classList.remove('border-gold-500');
+                    card.classList.add('border-transparent');
+                }
+            });
+
+            drawer.innerHTML = `
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 border-b border-sand pb-3">
+                    <div>
+                        <span class="text-xs font-bold text-gold-600 uppercase tracking-widest">Detail Eksegesis Yunani</span>
+                        <h3 class="text-2xl font-extrabold text-navy-900">${word.title}</h3>
+                    </div>
+                    <div class="bg-sand px-3 py-1 rounded-full text-xs font-bold text-slate-700 italic">
+                        "${word.versePhrase}"
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm mt-3">
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                        <strong class="text-navy-900 block mb-1">📖 Makna Harfiah & Akar Kata:</strong>
+                        <p class="text-slate-700">${word.rootMeaning}</p>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                        <strong class="text-navy-900 block mb-1">✝️ Implikasi Teologis (Injili):</strong>
+                        <p class="text-slate-700">${word.theologicalInsight}</p>
+                    </div>
+                    <div class="bg-amber-50/60 p-4 rounded-xl border border-amber-100">
+                        <strong class="text-gold-600 block mb-1">💡 Apa Maksudnya Bagi Kita?</strong>
+                        <p class="text-slate-700">${word.youthApplication}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // SERMON TIMELINE LOGIC
+        function renderSermonSegmentButtons() {
+            const container = document.getElementById('sermon-nav-buttons');
+            container.innerHTML = SERMON_SEGMENTS.map((seg, idx) => `
+                <button onclick="loadSermonSegment(${idx})" id="sermon-btn-${idx}" 
+                    class="px-3 py-2.5 text-xs font-bold rounded-xl border border-slate-200 hover:bg-gold-500 hover:text-white transition-all text-center flex flex-col items-center justify-center gap-0.5">
+                    <span class="uppercase tracking-wider">Poin ${idx+1}</span>
+                    <span class="font-normal opacity-80 text-[11px]">${seg.time.split(' ')[0]}</span>
+                </button>
+            `).join('');
+        }
+
+        function loadSermonSegment(idx) {
+            const seg = SERMON_SEGMENTS[idx];
+            
+            SERMON_SEGMENTS.forEach((_, i) => {
+                const btn = document.getElementById(`sermon-btn-${i}`);
+                if (i === idx) {
+                    btn.className = "px-3 py-2.5 text-xs font-bold rounded-xl bg-navy-800 text-white border border-navy-800 shadow-md text-center flex flex-col items-center justify-center gap-0.5";
+                } else {
+                    btn.className = "px-3 py-2.5 text-xs font-bold rounded-xl bg-white text-slate-700 border border-slate-200 hover:bg-sand transition-all text-center flex flex-col items-center justify-center gap-0.5";
+                }
+            });
+
+            document.getElementById('sermon-segment-summary').innerHTML = `
+                <span class="font-bold text-navy-900 block mb-0.5">🎯 Pesan Tuhan dalam Bagian Ini:</span>
+                <span>${seg.goal}</span>
+            `;
+
+            document.getElementById('transcript-badge').innerText = `Poin ${idx+1} (${seg.time})`;
+            document.getElementById('transcript-title').innerText = seg.title;
+            document.getElementById('transcript-duration').innerText = seg.duration;
+            document.getElementById('transcript-body').innerHTML = seg.text;
+        }
+
+        // CHART.JS INITIALIZATION (RADAR CHART ONLY)
+        function initRadarChart() {
+            const ctx = document.getElementById('comparisonRadarChart').getContext('2d');
+            radarChartInstance = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Akumulasi Materi', 'Popularitas/Sosmed', 'Kesetiaan Pelayanan', 'Daya Tahan Duka', 'Memelihara Doktrin', 'Orientasi Kekal'],
+                    datasets: [
+                        {
+                            label: 'Kemenangan Sekuler',
+                            data: [95, 90, 15, 20, 10, 5],
+                            backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                            borderColor: 'rgba(239, 68, 68, 0.8)',
+                            pointBackgroundColor: 'rgba(239, 68, 68, 1)',
+                            borderWidth: 2
+                        },
+                        {
+                            label: 'Kemenangan Alkitabiah',
+                            data: [25, 20, 95, 90, 95, 100],
+                            backgroundColor: 'rgba(30, 58, 138, 0.2)',
+                            borderColor: 'rgba(30, 58, 138, 0.9)',
+                            pointBackgroundColor: 'rgba(30, 58, 138, 1)',
+                            borderWidth: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { color: '#E2E8F0' },
+                            grid: { color: '#CBD5E1' },
+                            pointLabels: {
+                                font: { size: 10, weight: '600' },
+                                color: '#334155'
+                            },
+                            ticks: { display: false }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { boxWidth: 12, font: { size: 11 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        // QUIZ / REFLECTION FORM LOGIC
+        function calculateReflection(e) {
+            e.preventDefault();
+            const form = new FormData(e.target);
+            let biblicalCount = 0;
+            
+            for (let [key, value] of form.entries()) {
+                if (value === 'biblical') biblicalCount++;
+            }
+
+            const resultBox = document.getElementById('reflection-result');
+            resultBox.classList.remove('hidden');
+
+            if (biblicalCount >= 3) {
+                resultBox.className = "p-6 rounded-xl border border-emerald-200 bg-emerald-50/70 space-y-2";
+                resultBox.innerHTML = `
+                    <h4 class="text-lg font-extrabold text-emerald-900">🏃 Hasil: Tetaplah Berlari dalam Anugerah! (${biblicalCount}/4 Alkitabiah)</h4>
+                    <p class="text-sm text-emerald-800">
+                        Fokus kehidupan Anda saat ini selaras dengan kriteria kemenangan Alkitabiah. Peliharalah disiplin rohani harian, dan bersandarlah terus pada anugerah Kristus (*sola gratia*) untuk menyelesaikan maraton hingga garis akhir!
+                    </p>
+                `;
+            } else {
+                resultBox.className = "p-6 rounded-xl border border-amber-200 bg-amber-50/80 space-y-2";
+                resultBox.innerHTML = `
+                    <h4 class="text-lg font-extrabold text-amber-900">⚠️ Hasil: Saatnya Memperbaiki Lintasan Lari (${biblicalCount}/4 Alkitabiah)</h4>
+                    <p class="text-sm text-amber-800">
+                        Sebagian besar fokus energi Anda saat ini masih tersedot oleh kriteria kemenangan sekuler. Ingatlah nasihat Paulus: tanggalkan beban dosa, bertobatlah, dan alihkan pandangan mata Anda hanya kepada Kristus Sang Hakim yang Adil.
+                    </p>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
